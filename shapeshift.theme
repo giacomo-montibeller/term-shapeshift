@@ -7,9 +7,7 @@ branch_style() {
         return
     fi
     git_branch
-    colorize "[" green true
     git_diffs
-    colorize "]" green true
 }
 
 function pallini() {
@@ -26,26 +24,33 @@ function git_diffs() {
     if [[ -z $(git_branch) ]]; then
         return
     fi
-  added=$(git status -s | grep '^M' | wc -l | tr -d ' ')
+
+  added=$(git status -s | grep '^A' | wc -l | tr -d ' ')
   modified=$(git status -s | grep '^ M' | wc -l | tr -d ' ')
   untracked=$(git status -s | grep '^??' | wc -l | tr -d ' ')
 
   local FULL=""
-  FULL+=$(pallini $added green)
-  FULL+=$(pallini $modified blue)
-  FULL+=$(pallini $untracked red)
+  FULL+=$(pallini $added $SHAPESHIFT_GIT_STAGED_COLOR)
+  FULL+=$(pallini $modified $SHAPESHIFT_GIT_MODIFIED_COLOR)
+  FULL+=$(pallini $untracked $SHAPESHIFT_GIT_UNTRACKED_COLOR)
 
-  echo -n $FULL
+  if [[ $FULL != "" ]]; then
+    colorize " [" green true
+    echo -n $FULL
+    colorize "]" green true
+  fi
 }
 
-SHAPESHIFT_GIT_BRANCH_COLOR=green
+SHAPESHIFT_GIT_BRANCH_COLOR=white
 SHAPESHIFT_GIT_BRANCH_BOLD=true
 SHAPESHIFT_GIT_DIFF_SYMBOL="•"
 SHAPESHIFT_GIT_MODIFIED_COLOR=yellow
 SHAPESHIFT_GIT_STAGED_COLOR=green
 SHAPESHIFT_GIT_UNTRACKED_COLOR=red
+SHAPESHIFT_GIT_AHEAD="⇡"
+SHAPESHIFT_GIT_BEHIND="⇣"
 
 SHAPESHIFT_LS_COLORS_ENABLED=false
 
-SHAPESHIFT_PROMPT_LEFT_ELEMENTS=(dir_style branch_style)
+SHAPESHIFT_PROMPT_LEFT_ELEMENTS=(dir_style branch_style git_position prompt_arrow)
 SHAPESHIFT_PROMPT_RIGHT_ELEMENTS=()
