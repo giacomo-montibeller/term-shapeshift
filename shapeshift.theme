@@ -2,20 +2,13 @@ dir_style() {
     colorize "%1~" red true
 }
 
-branch_style() {
-    if [[ -z "$(git_branch)" ]]; then
-        return
-    fi
-    git_branch
-    git_diffs
-}
-
 function pallini() {
   dots=$1
   color=$2
+  symbol=$3
   if (( dots > 0 )); then
     for i in {1..$dots}; do
-      colorize "•" $color true
+      colorize $symbol $color true
     done
   fi
 }
@@ -25,17 +18,22 @@ function git_diffs() {
         return
     fi
 
-  added=$(git status -s | grep '^A' | wc -l | tr -d ' ')
-  modified=$(git status -s | grep '^ M' | wc -l | tr -d ' ')
-  untracked=$(git status -s | grep '^??' | wc -l | tr -d ' ')
+  added=$(git status -s | grep '^[A-Z]' | wc -l | tr -d ' ' | bc)
+  modified=$(git status -s | grep '^ [A-Z]' | wc -l | tr -d ' ' | bc)
+  untracked=$(git status -s | grep '^??' | wc -l | tr -d ' ' | bc)
 
   local FULL=""
-  FULL+=$(pallini $added $SHAPESHIFT_GIT_STAGED_COLOR)
-  FULL+=$(pallini $modified $SHAPESHIFT_GIT_MODIFIED_COLOR)
-  FULL+=$(pallini $untracked $SHAPESHIFT_GIT_UNTRACKED_COLOR)
+  FULL+=$(pallini $added $SHAPESHIFT_GIT_STAGED_COLOR "✓")
+  FULL+=$(pallini $modified $SHAPESHIFT_GIT_MODIFIED_COLOR "✗")
+  FULL+=$(pallini $untracked $SHAPESHIFT_GIT_UNTRACKED_COLOR "•")
 
+  integer somma
+  (( somma = added + modified + untracked ))
+  if [[ $somma -ge 5 ]]; then
+    say commit, please.
+  fi
   if [[ $FULL != "" ]]; then
-    colorize " [" green true
+    colorize "[" green true
     echo -n $FULL
     colorize "]" green true
   fi
@@ -43,14 +41,13 @@ function git_diffs() {
 
 SHAPESHIFT_GIT_BRANCH_COLOR=white
 SHAPESHIFT_GIT_BRANCH_BOLD=true
-SHAPESHIFT_GIT_DIFF_SYMBOL="•"
-SHAPESHIFT_GIT_MODIFIED_COLOR=yellow
 SHAPESHIFT_GIT_STAGED_COLOR=green
-SHAPESHIFT_GIT_UNTRACKED_COLOR=red
+SHAPESHIFT_GIT_MODIFIED_COLOR=red
+SHAPESHIFT_GIT_UNTRACKED_COLOR=blue
 SHAPESHIFT_GIT_AHEAD="⇡"
 SHAPESHIFT_GIT_BEHIND="⇣"
 
 SHAPESHIFT_LS_COLORS_ENABLED=false
 
-SHAPESHIFT_PROMPT_LEFT_ELEMENTS=(dir_style branch_style git_position prompt_arrow)
+SHAPESHIFT_PROMPT_LEFT_ELEMENTS=(dir_style git_branch async_git_diffs async_git_position prompt_arrow)
 SHAPESHIFT_PROMPT_RIGHT_ELEMENTS=()
