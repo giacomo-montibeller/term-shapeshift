@@ -13,7 +13,7 @@ function pallini() {
   fi
 }
 
-function git_diffs() {
+function git_differences() {
     if [[ -z $(git_branch) ]]; then
         return
     fi
@@ -54,5 +54,5 @@ SHAPESHIFT_GIT_BEHIND_COLOR=cyan
 SHAPESHIFT_LS_COLORS=(boldblue cyan green default red grey grey)
 SHAPESHIFT_LS_COLORS_ENABLED=true
 
-SHAPESHIFT_PROMPT_LEFT_ELEMENTS=(dir_style git_branch async_git_diffs async_git_position prompt_arrow)
+SHAPESHIFT_PROMPT_LEFT_ELEMENTS=(dir_style git_branch async_git_differences async_git_position prompt_arrow)
 SHAPESHIFT_PROMPT_RIGHT_ELEMENTS=()
